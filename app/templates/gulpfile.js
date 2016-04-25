@@ -184,9 +184,9 @@ gulp.task('generate', function(page, component, service, factory, filter, route)
 
     var promises = [];
 
-    if(page && route){
+    if(page){
         promises.push(abstractGenerator(
-            {name: page, templateKey:'CONTROLLER', locationKey:'PAGES', route: route, extraFolder: true},
+            {name: page, templateKey:'CONTROLLER', locationKey:'PAGES', route: route || page, extraFolder: true},
             {name: page, templateKey:'HTML', locationKey:'PAGES', extraFolder: true},
             {name: page, templateKey:'STYLES', locationKey:'PAGES', extraFolder: true}));
     }
@@ -291,7 +291,7 @@ function generate(options) {
     // Example: STYLES need to be dasherized, DIRECTIVES need to be camelized
     var shouldDasherizeVariableNames = (options.templateKey === 'HTML' || options.templateKey === 'STYLES');
 
-    console.log(shouldDasherizeVariableNames)
+
     var needAdditionalFolder = options.extraFolder;
 
     // When you are creating the destination path for your
@@ -302,7 +302,7 @@ function generate(options) {
     var destinationPath = paths[options.locationKey || options.templateKey];
     destinationPath += (needAdditionalFolder) ? options.name.dasherize() : '';
 
-    console.log(destinationPath)
+
     var deferred = Q.defer();
 
     /*
@@ -329,7 +329,7 @@ function generate(options) {
             // This what you want to rename your file to.
             // Files should always be dasherized
             path.basename = options.name.dasherize();
-            console.log(path.basename)
+
         }))
         /*
          STEP 4: Inject the data into the template.
