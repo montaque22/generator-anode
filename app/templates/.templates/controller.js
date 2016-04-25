@@ -3,9 +3,9 @@
  */
 'use strict';
 angular
-    .module('controllers')
+    .module(APP_NAME)
     .config(['$routeProvider', function($routeProvider) {
-        $routeProvider.when('<%= route%>', {
+        $routeProvider.when('/<%= route%>', {
             templateUrl: '<%= url%>',
             controller: '<%= name%>'
         });

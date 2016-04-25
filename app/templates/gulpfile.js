@@ -68,6 +68,9 @@ gulp.task('sass', function(cb){
             source: [paths.COMPONENTS, paths.PAGES],
             rename: MAIN_SASS
         }))
+        .on('error',function(err){
+            console.log(err)
+        })
 
         // Compile it
         .pipe($.sass(sassOptions).on('error', $.sass.logError))
@@ -122,7 +125,10 @@ gulp.task('html',function(){
         .pipe(gulp.dest(BUILD_ROOT))
 });
 
-// Watch Task
+/**
+ * @function
+ * 'gulp watch' will watch all the files for changes
+ */
 gulp.task('watch', function(){
 
     browserSync.init({
@@ -132,15 +138,48 @@ gulp.task('watch', function(){
     gulp.watch(APP_ROOT + '**/*.scss', ['sass']);
 
     gulp.watch([
-            APP_ROOT + '**/*.html',
-            APP_ROOT + '**/*.js'])
-        .on('change', browserSync.reload);
+        APP_ROOT + '**/*.html',
+        APP_ROOT + '**/*.js'], browserSync.reload);
+
+    gulp.watch( APP_ROOT + '**/*', function(evt){
+        switch(evt.type){
+            case 'added':
+            case 'deleted':
+            case 'renamed':
+                runSequence('inject:dev');
+                break
+        }
+    })
 
 });
 
 
 
-// File Generation Task
+/**
+ * @function
+ * 'gulp generate' will create all basic files that would need to be added to the project.
+ * It takes the signature gulp generate --<filetype> <filename> For Example:
+ * @example
+ * // The following will create a component (directive) called timeLord.
+ * // Components contain an associated HTML, SCSS, and JS file which are all copied to views/components/timeLord
+ * gulp generate --component timeLord
+ *
+ * @example
+ * // The following will create a page (controller) called dashboard.
+ * // Pages contain an associated HTML, SCSS, and JS file which are all copied to views/pages/dashboard
+ * // Only for generating Pages is there an optional parameter 'route' that can be used.
+ * // In this particular example the dashboard page will be accessible through the url route 'home'
+ * //(localhost:3000/#/home)
+ * // Otherwise the route will default to the name of the page (localhost:3000/#/dashboard
+ * gulp generate --page dashboard [--route home]
+ *
+ * Other filestypes that can be generated are 'service | factory | filter' and created using the parameters respectively
+ * @example
+ * gulp generate --service errorManagement
+ *
+ * @example
+ * gulp generate --factory compilations
+ */
 gulp.task('generate', function(page, component, service, factory, filter, route){
 
     var promises = [];
@@ -196,23 +235,27 @@ gulp.task('copy',['clean'], function(){
         .pipe(gulp.dest(BUILD_ROOT))
 });
 
-gulp.task('node', $.shell.task([
-    'echo Starting',
-    'echo Server'
-]));
 
-
-// Start Server
+/**
+ * @function
+ * 'gulp serve' compiles the Sass, injects development dependencies, and executes the watch task
+ */
 gulp.task('serve',function(){
-    runSequence('node', ['sass', 'inject:dev'], 'watch');
+    runSequence(['sass', 'inject:dev'], 'watch');
 })
 
-// build for production
+/**
+ * @function
+ * 'gulp build' will create a production build
+ */
 gulp.task('build',function(){
     runSequence(['copy', 'sass','inject'], 'html');
 })
 
-// Default Task, run some tasks in sequence
+/**
+ * @function
+ * running 'gulp' will execute 'gulp serve'
+ */
 gulp.task('default', function(){
     runSequence('serve');
 });
@@ -221,11 +264,7 @@ gulp.task('default', function(){
 
 //************* HELPER FUNCTIONS ******************//
 
-/**
- * Generates files based on the options passed in
- * @param options
- * @returns {*|promise}
- */
+// Generates files based on the options passed in
 function generate(options) {
     /*
      Properties
@@ -311,7 +350,7 @@ function generate(options) {
             name: shouldDasherizeVariableNames ? options.name.dasherize() : options.name.camelize(false),
 
             // This is primarily used when creating directives as the template URL needs to know where the HTML lives
-            url: destinationPath + '/' + options.name.dasherize() +'.html',
+            url: destinationPath.remove(APP_ROOT) + '/' + options.name.dasherize() +'.html',
 
             route: options.route
         }))
@@ -334,10 +373,7 @@ function generate(options) {
     return deferred.promise;
 }
 
-/**
- * Allows you to generate multiple files by using the options passed in the argument
- * @returns {*}
- */
+// Allows you to generate multiple files by using the options passed in the argument
 function abstractGenerator(){
     var args =  Array.prototype.slice.call(arguments, 0);
     var promises = [];
@@ -347,6 +383,10 @@ function abstractGenerator(){
     });
     return Q.allSettled(promises)
 }
+
+// Injects file references into the HTML
+// isDev {Boolean} if true it will inject the excluded folder. otherwise it will assume production build and
+// exclude all files from the excluded folder.
 
 function inject(isDev){
 
