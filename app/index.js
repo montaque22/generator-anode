@@ -32,26 +32,27 @@ module.exports = generators.Base.extend({
     },
     writing: function () {
         var NAME    = this.config.get('project');
-        var correct = isDevMode ? camelize(NAME).replace(/[^a-zA-Z ]/g, "") : '.';
+        var path    = isDevMode ? camelize(NAME).replace(/[^a-zA-Z ]/g, "") : '.';
+        var correct = camelize(NAME).replace(/[^a-zA-Z ]/g, "")
 
-        this.fs.copyTpl(this.templatePath('client'), this.destinationPath(correct +'/client'),{name:correct});
-        this.fs.copy(this.templatePath('.templates'), this.destinationPath(correct + '/.templates'));
-        this.fs.copy(this.templatePath('gulpfile.js'), this.destinationPath(correct + '/gulpfile.js'));
+        this.fs.copyTpl(this.templatePath('client'), this.destinationPath(path +'/client'),{name:correct});
+        this.fs.copy(this.templatePath('.templates'), this.destinationPath(path + '/.templates'));
+        this.fs.copy(this.templatePath('gulpfile.js'), this.destinationPath(path + '/gulpfile.js'));
 
         this.fs.copyTpl(
             this.templatePath('package.json'),
-            this.destinationPath(correct + '/package.json'),
+            this.destinationPath(path + '/package.json'),
             {name:correct}
         );
 
-        mkdirp.sync(this.destinationPath(correct + '/client/views/components'));
-        mkdirp.sync(this.destinationPath(correct + '/client/views/pages'));
-        mkdirp.sync(this.destinationPath(correct + '/client/js/custom'));
-        mkdirp.sync(this.destinationPath(correct + '/client/js/exclude'));
-        mkdirp.sync(this.destinationPath(correct + '/client/js/factories'));
-        mkdirp.sync(this.destinationPath(correct + '/client/js/services'));
-        mkdirp.sync(this.destinationPath(correct + '/client/fonts'));
-        mkdirp.sync(this.destinationPath(correct + '/client/images'));
+        mkdirp.sync(this.destinationPath(path + '/client/views/components'));
+        mkdirp.sync(this.destinationPath(path + '/client/views/pages'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/custom'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/exclude'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/factories'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/services'));
+        mkdirp.sync(this.destinationPath(path + '/client/fonts'));
+        mkdirp.sync(this.destinationPath(path + '/client/images'));
     }
 });
 
