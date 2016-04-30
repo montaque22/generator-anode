@@ -33,7 +33,7 @@ module.exports = generators.Base.extend({
     writing: function () {
         var NAME    = this.config.get('project');
         var path    = isDevMode ? camelize(NAME).replace(/[^a-zA-Z ]/g, "") : '.';
-        var correct = camelize(NAME).replace(/[^a-zA-Z ]/g, "")
+        var correct = camelize(NAME).replace(/[^a-zA-Z ]/g, "");
 
         this.fs.copyTpl(this.templatePath('client'), this.destinationPath(path +'/client'),{name:correct});
         this.fs.copy(this.templatePath('.templates'), this.destinationPath(path + '/.templates'));
@@ -50,7 +50,9 @@ module.exports = generators.Base.extend({
         mkdirp.sync(this.destinationPath(path + '/client/js/custom'));
         mkdirp.sync(this.destinationPath(path + '/client/js/exclude'));
         mkdirp.sync(this.destinationPath(path + '/client/js/factories'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/filters'));
         mkdirp.sync(this.destinationPath(path + '/client/js/services'));
+        mkdirp.sync(this.destinationPath(path + '/client/js/vendors'));
         mkdirp.sync(this.destinationPath(path + '/client/fonts'));
         mkdirp.sync(this.destinationPath(path + '/client/images'));
     }

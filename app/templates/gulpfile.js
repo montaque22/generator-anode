@@ -34,7 +34,8 @@ var templates   = {
     STYLES      : ".templates/style.scss",
     SERVICES    : ".templates/services.js/",
     FACTORIES   : ".templates/factory.js/",
-    FILTERS     : ".templates/filters.js/"
+    FILTERS     : ".templates/filters.js/",
+    PROVIDERS   : ".templates/provider.js/",
 };
 var paths       = {
     STYLES      : APP_ROOT + "styles/",
@@ -45,6 +46,7 @@ var paths       = {
     SERVICES    : APP_ROOT + "js/services/",
     FACTORIES   : APP_ROOT + "js/factories/",
     FILTERS     : APP_ROOT + "js/filters/",
+    PROVIDERS   : APP_ROOT + "js/providers/",
     JS          : APP_ROOT + "js/",
     INIT        : APP_ROOT + "js/init/",
     VENDOR      : APP_ROOT + "js/vendors/",
@@ -180,7 +182,7 @@ gulp.task('watch', function(){
  * @example
  * gulp generate --factory compilations
  */
-gulp.task('generate', function(page, component, service, factory, filter, route){
+gulp.task('generate', function(page, component, service, factory, filter, route, provider){
 
     var promises = [];
 
@@ -208,6 +210,10 @@ gulp.task('generate', function(page, component, service, factory, filter, route)
 
     if(filter){
         promises.push(abstractGenerator({name: filter, templateKey:'FILTERS', locationKey:'FILTERS'}));
+    }
+
+    if(provider){
+        promises.push(abstractGenerator({name: provider, templateKey:'PROVIDERS', locationKey:'PROVIDERS'}));
     }
 
     return Q.allSettled(promises);
@@ -410,10 +416,11 @@ function inject(isDev){
             paths.DIRECTIVE + '**/*',
             paths.SERVICES + '**/*',
             paths.FACTORIES + '**/*',
+            paths.PROVIDERS + '**/*',
             paths.FILTERS + '**/*'],{read:false}), {relative:true}))
 
         // Inject all CSS Files
-        .pipe($.inject(gulp.src([paths.STYLES + '**/*.css'],{read:false}), {relative:true}))
+        .pipe($.inject(gulp.src([paths.STYLES + '**/*.css'],{read:false}), {relative:true}));
 
 
 

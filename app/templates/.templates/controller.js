@@ -4,10 +4,11 @@
 'use strict';
 angular
     .module(APP_NAME)
-    .config(['$routeProvider', function($routeProvider) {
+    .config(['$routeProvider', 'authorizationProvider', function($routeProvider, authorizationProvider) {
         $routeProvider.when('/<%= route%>', {
-            templateUrl: '<%= url%>',
-            controller: '<%= name%>'
+            templateUrl : '<%= url%>',
+            controller  : '<%= name%>',
+            resolve     : authorizationProvider.isAuthorized()
         });
     }])
     .controller('<%= name%>', ['$scope',

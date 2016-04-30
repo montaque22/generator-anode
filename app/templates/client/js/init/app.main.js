@@ -12,9 +12,11 @@ APP_NAME="<%= name %>";
     angular.module('directives',[]);
     angular.module('factories',[]);
     angular.module('filters', []);
+    angular.module('providers', []);
 
     // Initializes (Sets) the application
     var app = angular.module(APP_NAME,[
+        'providers',
         'services',
         'factories',
         'directives',

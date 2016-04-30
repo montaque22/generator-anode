@@ -3,7 +3,7 @@
  */
 angular
     .module('factories')
-    .factory('<%= name %>', function() {
+    .factory('<%= name %>', [function() {
 
         var <%= name %> = {};
 
@@ -11,4 +11,4 @@ angular
 
         // Then return it
         return <%= name %>
-});
+}]);

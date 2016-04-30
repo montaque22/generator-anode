@@ -3,9 +3,9 @@
  */
 angular
     .module('services')
-    .service('<%= name %>', function() {
+    .service('<%= name %>', [function() {
     this.method1 = function() {
         //..
     }
 
-});
+}]);
