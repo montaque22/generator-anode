@@ -11,6 +11,22 @@ $ yo anode
 And follow the prompts
 
 
+## Setup
+Just running gulp or anything else may not work as additional setup would most likely be required. This project package 
+requires bower in order to run so to install you and complete the rest of the setup run:
+
+```sh
+ $ npm run init  
+ ```
+
+This command will run 
+> npm install  
+> sudo npm install -g bower  
+> bower init  
+> mkdir bower_components  
+
+Feel free to run these manually if you have any of the following already.
+
 ## Gulp Tasks
 Gulp will be very helpful in this project. It will handle all the file creations, place them in the proper folder and
  inject them into the index.html file.

@@ -5,7 +5,7 @@
   "keywords": [],
   "author": "",
   "scripts": {
-    "init" : "npm install && sudo npm install -g bower && bower init",
+    "init" : "mkdir bower_components & npm install && sudo npm install -g bower && bower init ",
     "start": "gulp"
   },
   "license": "MIT",
