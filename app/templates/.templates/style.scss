@@ -2,10 +2,14 @@
 
 }
 
-[<%= name%>]{
-
+.<%= name%>{
+  display: block;
 }
 
 .component-<%= name%>{
+
+}
+
+[<%= name%>]{
 
 }

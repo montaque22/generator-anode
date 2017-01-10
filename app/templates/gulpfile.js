@@ -15,6 +15,7 @@ var recursive   = require('recursive-readdir');
 var runSequence = require('run-sequence');
 var fs          = require('fs');
 var Q           = require('q');
+var wiredep     = require('wiredep').stream;
 
 
 var sassOptions = {
@@ -27,6 +28,8 @@ var APP_ROOT    = "./client/";
 var BUILD_ROOT  = './build/';
 var MAIN_SASS   = "main.scss";
 var MAIN_INDEX  = "index.html";
+var BOWER       = APP_ROOT+"bower_components";
+
 var templates   = {
     DIRECTIVE   : ".templates/directives.js",
     CONTROLLER  : ".templates/controller.js",
@@ -65,7 +68,7 @@ gulp.task('sass', function(cb){
     // read the file
     return  gulp.src(paths.SASS + MAIN_SASS)
 
-        // Glob all the files into the main scss file
+    // Glob all the files into the main scss file
         .pipe($.globber({
             source: [paths.COMPONENTS, paths.PAGES],
             rename: MAIN_SASS
@@ -77,6 +80,8 @@ gulp.task('sass', function(cb){
         // Compile it
         .pipe($.sass(sassOptions).on('error', $.sass.logError))
 
+        .pipe($.autoprefixer({browsers: ['last 2 version']}))
+
         // save it
         .pipe(gulp.dest(paths.STYLES))
 
@@ -85,6 +90,24 @@ gulp.task('sass', function(cb){
 
 });
 
+/**
+ * Inject Bower Dependencies
+ */
+gulp.task('bower',['bower:scss'], function () {
+    var index   = APP_ROOT      + MAIN_INDEX;
+    return gulp.src(index)
+        .pipe(wiredep({
+            exclude: 'angular.js'
+        }))
+        .pipe(gulp.dest(APP_ROOT));
+});
+
+gulp.task('bower:scss', function () {
+    var scss    = paths.SASS    + MAIN_SASS;
+    return gulp.src(scss)
+        .pipe(wiredep())
+        .pipe(gulp.dest(paths.SASS));
+});
 
 /**
  * Javascript needs to be injected so we can make sure we can have them in the right order
@@ -105,7 +128,7 @@ gulp.task('inject:dev',function(){
 
 gulp.task('html',function(){
 
-    return gulp.src([APP_ROOT + '**/*.html'],{base:APP_ROOT})
+    return gulp.src([APP_ROOT + MAIN_INDEX],{base:APP_ROOT})
         .pipe($.plumber({
             errorHandler:function(error){
                 console.log('HTML Task encountered an error');
@@ -138,6 +161,8 @@ gulp.task('watch', function(){
     });
 
     gulp.watch(APP_ROOT + '**/*.scss', ['sass']);
+
+    gulp.watch(BOWER, ['bower']);
 
     gulp.watch([
         APP_ROOT + '**/*.html',
@@ -231,13 +256,13 @@ gulp.task('clean',function(){
 gulp.task('copy',['clean'], function(){
     //move images fonts javascript html
     return gulp.src([
-            paths.FONTS,
-            paths.IMAGES,
-            paths.VIEWS + '**/*.html',
-            '!'+ APP_ROOT + '**/*.js', // The HTML files at the root level
-            '!'+ APP_ROOT + '*.html', // The HTML files at the root level
-            '!'+ APP_ROOT + '**/*.scss' // Any Styles
-        ],{base:APP_ROOT})
+        paths.FONTS,
+        paths.IMAGES + '**/*',
+        paths.VIEWS + '**/*.html',
+        '!'+ APP_ROOT + '**/*.js', // The HTML files at the root level
+        '!'+ APP_ROOT + '*.html', // The HTML files at the root level
+        '!'+ APP_ROOT + '**/*.scss' // Any Styles
+    ],{base:APP_ROOT})
         .pipe(gulp.dest(BUILD_ROOT))
 });
 
@@ -247,16 +272,16 @@ gulp.task('copy',['clean'], function(){
  * 'gulp serve' compiles the Sass, injects development dependencies, and executes the watch task
  */
 gulp.task('serve',function(){
-    runSequence(['sass', 'inject:dev'], 'watch');
-})
+    runSequence(['bower','sass', 'inject:dev'], 'watch');
+});
 
 /**
  * @function
  * 'gulp build' will create a production build
  */
 gulp.task('build',function(){
-    runSequence(['copy', 'sass','inject'], 'html');
-})
+    runSequence(['copy', 'bower', 'sass','inject'], 'html');
+});
 
 /**
  * @function
@@ -315,19 +340,19 @@ function generate(options) {
      STEP 2: Get the template
      */
     var stream = gulp.src( templateUrl)
-        /*
-         STEP 3: Rename the template
-         Know where you want to save the file.
-         Should the file be placed in its own folder or
-         is it going to live with other files?. This is the difference between
-         placing component files together and placing services together.
+    /*
+     STEP 3: Rename the template
+     Know where you want to save the file.
+     Should the file be placed in its own folder or
+     is it going to live with other files?. This is the difference between
+     placing component files together and placing services together.
 
-         It is also very important to hyphenate file names.
-         The user may pass you a name that is already hyphenated
-         or they may pass a file that is written in camel-case.
-         In both cases you may want to make sure all the
-         names are hyphenated.
-         */
+     It is also very important to hyphenate file names.
+     The user may pass you a name that is already hyphenated
+     or they may pass a file that is written in camel-case.
+     In both cases you may want to make sure all the
+     names are hyphenated.
+     */
         .pipe($.rename(function (path) {
             // This is the directory you want to save the file in
             path.dirname = destinationPath;
@@ -397,7 +422,7 @@ function abstractGenerator(){
 function inject(isDev){
 
     var stream = gulp.src(APP_ROOT + MAIN_INDEX)
-        // Capture Errors
+    // Capture Errors
         .pipe($.plumber())
 
         // Inject Vendor files
@@ -412,12 +437,14 @@ function inject(isDev){
 
         // inject all other javascript minus the Vendor and Main javascript files
         .pipe($.inject(gulp.src([
-            paths.CONTROLLER + '**/*',
-            paths.DIRECTIVE + '**/*',
-            paths.SERVICES + '**/*',
-            paths.FACTORIES + '**/*',
-            paths.PROVIDERS + '**/*',
-            paths.FILTERS + '**/*'],{read:false}), {relative:true}))
+            paths.CONTROLLER    + '**/*',
+            paths.DIRECTIVE     + '**/*',
+            paths.SERVICES      + '**/*',
+            paths.FACTORIES     + '**/*',
+            paths.PROVIDERS     + '**/*',
+            paths.COMPONENTS    + '**/*',
+            paths.PAGES         + '**/*',
+            paths.FILTERS       + '**/*'],{read:false}), {relative:true}))
 
         // Inject all CSS Files
         .pipe($.inject(gulp.src([paths.STYLES + '**/*.css'],{read:false}), {relative:true}));
